@@ -1,0 +1,60 @@
+# Import libraries
+import numpy as np
+import pandas as pd
+import codecademylib3
+from scipy.stats import binom_test, f_oneway, chi2_contingency
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+
+# Import data
+dogs = pd.read_csv('dog_data.csv')
+
+# Subset to just whippets, terriers, and pitbulls
+dogs_wtp = dogs[dogs.breed.isin(['whippet', 'terrier', 'pitbull'])]
+
+# Subset to just poodles and shihtzus
+dogs_ps = dogs[dogs.breed.isin(['poodle', 'shihtzu'])]
+
+# first five rows of dogs
+print(dogs.head())
+
+# number of whippet rescues 
+whippet_rescue = dogs.is_rescue[dogs.breed == 'whippet']
+num_whippet_rescues = np.sum(whippet_rescue == 1)
+print('Number of whippet rescues: ')
+print(num_whippet_rescues)
+
+# number of whippet
+num_whippet = len(whippet_rescue)
+print('Number of whippet: ')
+print(num_whippet)
+
+# run binom test
+pval = binom_test(num_whippet_rescues, num_whippet, 0.08)
+
+print('p-value for binomial test: ')
+print(pval)
+
+# weights of whippets, terriers and pitbulls
+wt_whippets = dogs.weight[dogs.breed == 'whippet']
+wt_terriers = dogs.weight[dogs.breed == 'terrier']
+wt_pitbulls = dogs.weight[dogs.breed == 'pitbull']
+
+# run ANOVA test
+fstat, pval = f_oneway(wt_pitbulls, wt_terriers, wt_whippets)
+print('p-value of ANOVA test: ')
+print(pval)
+
+# run Tukey's range test
+tukey_results = pairwise_tukeyhsd(dogs_wtp.weight, dogs_wtp.breed, 0.05)
+print('Tukey Range test results: ')
+print(tukey_results)
+
+# create contingency table
+Xtab = pd.crosstab(dogs_ps.breed, dogs_ps.color)
+print('contingency table for color and breed: ')
+print(Xtab)
+
+# run chi-square test
+chi2, pval, dof, expected = chi2_contingency(Xtab)
+print('p-value for chi-square test: ')
+print(pval)
